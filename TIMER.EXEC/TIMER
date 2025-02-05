@@ -1,0 +1,51 @@
+/* ---------------------  rexx procedure  ---------------------- *
+ * Name:      Timer                                              *
+ *                                                               *
+ * Function:  Time the repetitive execution of a REXX exec       *
+ *                                                               *
+ * Syntax:    %TIMER exec / count                                *
+ *                                                               *
+ * Author:    Lionel B. Dyck                                     *
+ *                                                               *
+ * History:                                                      *
+ *            01/06/94 - add syscpu as well                      *
+ *                       and offset count by /                   *
+ *            09/11/91 - changed to use sysvar(syssrv)           *
+ *            08/09/91 - modified to report average time         *
+ *                     - change to use tso time for service      *
+ *            01/23/91 - Creation of this exec                   *
+ * ------------------------------------------------------------- */
+
+arg input
+
+if length(input) = 0 then exit 8
+
+if pos("/",input) > 0 then
+   parse value input with exec "/" count
+   else do
+        exec = input
+        count = 1
+        end
+
+say "Starting the time test of" exec "for" count "times"
+
+s_service = sysvar('SYSSRV')
+s_time    = sysvar('SYSCPU')
+s_wtime   = time('s')
+
+do count
+   exec
+   end
+
+e_service = sysvar('SYSSRV')
+e_time    = sysvar('SYSCPU')
+e_wtime   = time('s')
+
+total_service = e_service - s_service
+total_time    = e_time    - s_time
+total_wtime   = e_wtime   - s_wtime
+
+say "REXX Procedure" exec "executed" count,
+     "times with average service units of" total_service/count
+say "and a total cpu time of:" total_time/count
+say "with total wall time of:" total_wtime
